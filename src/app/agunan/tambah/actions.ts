@@ -4,6 +4,24 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
+async function generateCollateralId(): Promise<string> {
+  const year = new Date().getFullYear();
+  const prefix = `AGN-${year}-`;
+  const count = await prisma.collateral.count({
+    where: { collateralId: { startsWith: prefix } }
+  });
+  let seq = count + 1;
+  let candidate = `${prefix}${String(seq).padStart(3, "0")}`;
+  while (true) {
+    const existing = await prisma.collateral.findUnique({ where: { collateralId: candidate } });
+    if (!existing) break;
+    seq++;
+    candidate = `${prefix}${String(seq).padStart(3, "0")}`;
+  }
+  return candidate;
+}
+
+
 // ... (fungsi generateCollateralId dan bagian awal addAgunanAction tetap sama)
 
 export async function addAgunanAction(formData: FormData) {
