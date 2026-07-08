@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  name      String
+  role      Role     @default(ADM_KREDIT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requestsMade      CollateralRequest[] @relation("Requestor")
+  requestsApproved  CollateralRequest[] @relation("Approver")
+  handoverForms     HandoverForm[]      @relation("AdminHandover")
+  handoverFormsCash HandoverForm[]      @relation("CashHeadHandover")
+}
+
+enum Role {
+  ADM_KREDIT
+  KABAG_OPERASIONAL
+  PIMPINAN_CABANG
+  DIREKTUR
+  KEPALA_KAS
+}
+
+// ============================================================
+// Collateral = Header per Nasabah (1 nasabah = 1 record)
+// ============================================================
+model Collateral {
+  id           String           @id @default(cuid())
+  collateralId String           @unique // e.g. AGN-2026-001
+  customerName String
+  noRekening   String?          @unique // 1 no rekening = 1 record agunan
+  status       CollateralStatus @default(DI_BRANKAS)
+
+  // Approval at entry
+  disetujuiOleh String?
+
+  // Link to handover form
+  handoverFormId String?
+  handoverForm   HandoverForm? @relation(fields: [handoverFormId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items    CollateralItem[]
+  requests CollateralRequest[]
+}
+
+// ============================================================
+// CollateralItem = Detail agunan fisik (BPKB, SHM, dll.)
+// 1 Collateral bisa punya banyak CollateralItem
+// ============================================================
+model CollateralItem {
+  id           String     @id @default(cuid())
+  collateralId String
+  collateral   Collateral @relation(fields: [collateralId], references: [id], onDelete: Cascade)
+
+  type        String  // SHM / SHGB / BPKB Mobil / BPKB Motor / dll.
+  description String?
+
+  // Fields for BPKB
+  noBpkb         String?
+  namaBpkb       String?
+  noPol          String?
+  kendaraanJenis String?
+  kendaraanMerk  String?
+  kendaraanTahun String?
+
+  // Fields for SHM / SHGB
+  noShm          String?
+  namaPemilikShm String?
+  alamatShm      String?
+
+  status         CollateralItemStatus @default(DI_BRANKAS)
+  tempReceipt    String? // STNK / Notice pajak pengganti
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  herTransactions HerTransaction[]
+}
+
+enum CollateralStatus {
+  DI_BRANKAS
+  MENUNGGU_APPROVAL
+  DISAHKAN
+  PROSES_PENYERAHAN
+  SELESAI_DISERAHKAN
+  MUTASI
+  PENCAIRAN_ULANG
+}
+
+model CollateralRequest {
+  id           String     @id @default(cuid())
+  collateralId String
+  collateral   Collateral @relation(fields: [collateralId], references: [id])
+
+  requestorId String
+  requestor   User   @relation("Requestor", fields: [requestorId], references: [id])
+
+  approverId String?
+  approver   User?   @relation("Approver", fields: [approverId], references: [id])
+
+  purpose RequestPurpose
+  status  RequestStatus  @default(PENDING)
+  notes   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum RequestPurpose {
+  PELUNASAN_LANGSUNG
+  MELALUI_KEPALA_KAS
+  MUTASI_ANTAR_KANTOR
+  PENCAIRAN_ULANG
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model HandoverForm {
+  id          String       @id @default(cuid())
+  collaterals Collateral[]
+
+  adminId    String
+  admin      User   @relation("AdminHandover", fields: [adminId], references: [id])
+  cashHeadId String?
+  cashHead   User?  @relation("CashHeadHandover", fields: [cashHeadId], references: [id])
+
+  customerName  String
+  customerSign  String?
+  adminSign     String?
+  photoProofUrl String?
+  tanggalLunas  DateTime?
+  disetujuiOleh String?
+
+  handoverDate DateTime @default(now())
+  notes        String?
+}
+
+enum CollateralItemStatus {
+  DI_BRANKAS
+  KELUAR_HER
+}
+
+model HerTransaction {
+  id                 String         @id @default(cuid())
+  collateralItemId   String
+  collateralItem     CollateralItem @relation(fields: [collateralItemId], references: [id], onDelete: Cascade)
+  petugasName        String
+  tglKeluar          DateTime       @default(now())
+  tglEstimasiKembali DateTime
+  tglKembali         DateTime?
+  stnkNoticeNo       String?
+  status             HerStatus      @default(KELUAR)
+  oldNoBpkb          String?
+  oldNamaBpkb        String?
+  newNoBpkb          String?
+  newNamaBpkb        String?
+  notes              String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+}
+
+enum HerStatus {
+  KELUAR
+  KEMBALI
+}
+
