@@ -8,10 +8,12 @@ import { redirect } from "next/navigation";
 export default async function ApprovalPage() {
   const session = await getServerSession(authOptions);
   
-  if (!session) redirect("/login");
+  if (!session || !session.user) {
+    redirect("/login");
+  }
 
   // Only Kabag Ops, Pimpinan Cabang, or Direktur can approve
-  const role = session.user.role as string;
+  const role = (session.user as any).role as string;
   const canApprove = ["KABAG_OPERASIONAL", "PIMPINAN_CABANG", "DIREKTUR"].includes(role);
 
   const pendingRequests = await prisma.collateralRequest.findMany({
