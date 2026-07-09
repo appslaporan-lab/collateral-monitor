@@ -73,7 +73,7 @@ export async function addAgunanAction(formData: FormData) {
   }
 
   // Solusi: Menggunakan {} sebagai argumen kedua agar memenuhi syarat jumlah argumen
-  revalidateTag("collaterals", {});
+  (revalidateTag as any)("collaterals", {});
   revalidatePath("/agunan");
   redirect("/agunan");
 }
