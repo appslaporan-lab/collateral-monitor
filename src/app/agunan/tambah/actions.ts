@@ -1,8 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag as nextRevalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
+
+// Definisi alias aman untuk memaksa argumen yang diinginkan tanpa error build
+const revalidateTag = (tag: string) => (nextRevalidateTag as any)(tag, {});
 
 async function generateCollateralId(): Promise<string> {
   const year = new Date().getFullYear();
@@ -72,8 +75,8 @@ export async function addAgunanAction(formData: FormData) {
     await prisma.collateralItem.create({ data: itemData });
   }
 
-  // Solusi: Menggunakan {} sebagai argumen kedua agar memenuhi syarat jumlah argumen
-  (revalidateTag as any)("collaterals", {});
+  // Pemanggilan alias yang aman
+  revalidateTag("collaterals");
   revalidatePath("/agunan");
   redirect("/agunan");
 }
@@ -103,8 +106,8 @@ export async function addItemToCollateralAction(collateralId: string, formData: 
 
   await prisma.collateralItem.create({ data: itemData });
   
-  // Solusi: Menggunakan {} sebagai argumen kedua
-  revalidateTag("collaterals", {});
+  // Pemanggilan alias yang aman
+  revalidateTag("collaterals");
   revalidatePath(`/agunan/${collateralId}`);
   redirect(`/agunan/${collateralId}`);
 }
