@@ -60,7 +60,7 @@ export default async function ApprovalPage() {
         where: { id: requestId },
         data: {
           status: "APPROVED",
-          approverId: userSession.user.id
+          approverId: (userSession.user as any).id
         }
       });
       await prisma.collateral.update({
@@ -72,7 +72,7 @@ export default async function ApprovalPage() {
         where: { id: requestId },
         data: {
           status: "REJECTED",
-          approverId: userSession.user.id
+          approverId: (userSession.user as any).id
         }
       });
       await prisma.collateral.update({
