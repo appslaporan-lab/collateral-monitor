@@ -72,9 +72,8 @@ export async function addAgunanAction(formData: FormData) {
     await prisma.collateralItem.create({ data: itemData });
   }
 
-  // Solusi Paling Aman: menggunakan @ts-expect-error untuk bypass strict build check
-  // @ts-expect-error: Next.js 15 build requires explicit options for revalidateTag
-  revalidateTag("collaterals");
+  // Solusi: Menggunakan {} sebagai argumen kedua agar memenuhi syarat jumlah argumen
+  revalidateTag("collaterals", {});
   revalidatePath("/agunan");
   redirect("/agunan");
 }
@@ -104,9 +103,8 @@ export async function addItemToCollateralAction(collateralId: string, formData: 
 
   await prisma.collateralItem.create({ data: itemData });
   
-  // Solusi Paling Aman: menggunakan @ts-expect-error untuk bypass strict build check
-  // @ts-expect-error: Next.js 15 build requires explicit options for revalidateTag
-  revalidateTag("collaterals");
+  // Solusi: Menggunakan {} sebagai argumen kedua
+  revalidateTag("collaterals", {});
   revalidatePath(`/agunan/${collateralId}`);
   redirect(`/agunan/${collateralId}`);
 }
