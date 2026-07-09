@@ -81,7 +81,7 @@ export default async function ApprovalPage() {
       });
     }
 
-    revalidateTag("collaterals");
+    revalidateTag("collaterals" as any);
     revalidatePath("/approval");
     revalidatePath("/");
   }
