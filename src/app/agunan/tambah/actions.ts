@@ -21,8 +21,6 @@ async function generateCollateralId(): Promise<string> {
   return candidate;
 }
 
-// ... (fungsi generateCollateralId dan bagian awal addAgunanAction tetap sama)
-
 export async function addAgunanAction(formData: FormData) {
   const customerName = formData.get("customerName") as string;
   const noRekening   = formData.get("noRekening") as string;
@@ -74,10 +72,8 @@ export async function addAgunanAction(formData: FormData) {
     await prisma.collateralItem.create({ data: itemData });
   }
 
-  // Perbaikan revalidate menggunakan @ts-ignore
-  // @ts-ignore
-  {}
-  (revalidateTag as any)("collaterals");
+  // Solusi permanen: casting ke fungsi yang menerima 1 argumen
+  (revalidateTag as (tag: string) => void)("collaterals");
   revalidatePath("/agunan");
   redirect("/agunan");
 }
@@ -107,10 +103,8 @@ export async function addItemToCollateralAction(collateralId: string, formData: 
 
   await prisma.collateralItem.create({ data: itemData });
   
-  // Perbaikan revalidate menggunakan @ts-ignore
-  // @ts-ignore
-  {}
-  (revalidateTag as any)("collaterals");
+  // Solusi permanen: casting ke fungsi yang menerima 1 argumen
+  (revalidateTag as (tag: string) => void)("collaterals");
   revalidatePath(`/agunan/${collateralId}`);
   redirect(`/agunan/${collateralId}`);
 }
