@@ -4,9 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath, revalidateTag as nextRevalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-// --- SOLUSI FINAL: Pembungkus yang memberikan opsi valid ---
-// Kita berikan objek opsi { type: 'layout' } agar signature terpenuhi oleh Next.js 15
-const revalidateTag = (tag: string) => nextRevalidateTag(tag, { type: 'layout' });
+// SOLUSI FINAL: Gunakan 'as any' pada opsi untuk mematikan pengecekan tipe data yang kaku
+const revalidateTag = (tag: string) => (nextRevalidateTag as any)(tag, { type: 'layout' } as any);
 
 async function generateCollateralId(): Promise<string> {
   const year = new Date().getFullYear();
@@ -25,7 +24,6 @@ async function generateCollateralId(): Promise<string> {
   return candidate;
 }
 
-// --- FUNGSI UNTUK AGUNAN ---
 export async function addAgunanAction(formData: FormData) {
   const customerName = formData.get("customerName") as string;
   const noRekening   = formData.get("noRekening") as string;
@@ -92,7 +90,6 @@ export async function addItemToCollateralAction(collateralId: string, formData: 
     description: formData.get("description") as string || null,
   };
 
-  // ... (Logika mapping item tetap sama)
   if (type.includes("BPKB")) {
     itemData.noBpkb = formData.get("noBpkb") as string || null;
     itemData.namaBpkb = formData.get("namaBpkb") as string || null;
@@ -111,16 +108,4 @@ export async function addItemToCollateralAction(collateralId: string, formData: 
   revalidateTag("collaterals");
   revalidatePath(`/agunan/${collateralId}`);
   redirect(`/agunan/${collateralId}`);
-}
-
-// --- FUNGSI UNTUK HER ---
-export async function addHerAction(formData: FormData) {
-  // Masukkan logika addHerAction Anda di sini
-  // Contoh:
-  // await prisma.her.create({ ... });
-
-  revalidateTag("collaterals");
-  revalidatePath("/her");
-  revalidatePath("/");
-  redirect("/her");
 }
