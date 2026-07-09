@@ -72,8 +72,9 @@ export async function addAgunanAction(formData: FormData) {
     await prisma.collateralItem.create({ data: itemData });
   }
 
-  // Solusi permanen: casting ke fungsi yang menerima 1 argumen
-  (revalidateTag as (tag: string) => void)("collaterals");
+  // Solusi: Menggunakan argumen kedua berupa objek kosong {} 
+  // untuk memenuhi kebutuhan tipe data Next.js 15
+  revalidateTag("collaterals", {});
   revalidatePath("/agunan");
   redirect("/agunan");
 }
@@ -103,8 +104,8 @@ export async function addItemToCollateralAction(collateralId: string, formData: 
 
   await prisma.collateralItem.create({ data: itemData });
   
-  // Solusi permanen: casting ke fungsi yang menerima 1 argumen
-  (revalidateTag as (tag: string) => void)("collaterals");
+  // Solusi: Menggunakan argumen kedua berupa objek kosong {}
+  revalidateTag("collaterals", {});
   revalidatePath(`/agunan/${collateralId}`);
   redirect(`/agunan/${collateralId}`);
 }
