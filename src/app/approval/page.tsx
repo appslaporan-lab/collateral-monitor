@@ -31,7 +31,7 @@ export default async function ApprovalPage() {
 
   const processedRequests = await prisma.collateralRequest.findMany({
     where: { 
-      approverId: session.user.id,
+      approverId: (session.user as any).id,
       status: { not: "PENDING" }
     },
     include: { 
