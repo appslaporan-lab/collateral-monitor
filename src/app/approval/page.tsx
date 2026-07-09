@@ -80,7 +80,8 @@ export default async function ApprovalPage() {
         data: { status: "DI_BRANKAS" } // return back to safe
       });
     }
-
+	
+	{}
     (revalidateTag as (tag: string) => void)("collaterals");
     revalidatePath("/approval");
     revalidatePath("/");

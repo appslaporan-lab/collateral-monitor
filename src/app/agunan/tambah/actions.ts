@@ -21,7 +21,6 @@ async function generateCollateralId(): Promise<string> {
   return candidate;
 }
 
-
 // ... (fungsi generateCollateralId dan bagian awal addAgunanAction tetap sama)
 
 export async function addAgunanAction(formData: FormData) {
@@ -77,7 +76,8 @@ export async function addAgunanAction(formData: FormData) {
 
   // Perbaikan revalidate menggunakan @ts-ignore
   // @ts-ignore
-  revalidateTag("collaterals");
+  {}
+  (revalidateTag as any)("collaterals");
   revalidatePath("/agunan");
   redirect("/agunan");
 }
@@ -109,7 +109,8 @@ export async function addItemToCollateralAction(collateralId: string, formData: 
   
   // Perbaikan revalidate menggunakan @ts-ignore
   // @ts-ignore
-  revalidateTag("collaterals");
+  {}
+  (revalidateTag as any)("collaterals");
   revalidatePath(`/agunan/${collateralId}`);
   redirect(`/agunan/${collateralId}`);
 }
