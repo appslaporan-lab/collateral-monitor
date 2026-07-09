@@ -4,8 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath, revalidateTag as nextRevalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-// Definisi alias aman untuk memaksa argumen yang diinginkan tanpa error build
-const revalidateTag = (tag: string) => (nextRevalidateTag as any)(tag, {});
+// --- SOLUSI FINAL: Pembungkus yang memberikan opsi valid ---
+// Kita berikan objek opsi { type: 'layout' } agar signature terpenuhi oleh Next.js 15
+const revalidateTag = (tag: string) => nextRevalidateTag(tag, { type: 'layout' });
 
 async function generateCollateralId(): Promise<string> {
   const year = new Date().getFullYear();
@@ -24,6 +25,7 @@ async function generateCollateralId(): Promise<string> {
   return candidate;
 }
 
+// --- FUNGSI UNTUK AGUNAN ---
 export async function addAgunanAction(formData: FormData) {
   const customerName = formData.get("customerName") as string;
   const noRekening   = formData.get("noRekening") as string;
@@ -75,7 +77,6 @@ export async function addAgunanAction(formData: FormData) {
     await prisma.collateralItem.create({ data: itemData });
   }
 
-  // Pemanggilan alias yang aman
   revalidateTag("collaterals");
   revalidatePath("/agunan");
   redirect("/agunan");
@@ -91,23 +92,35 @@ export async function addItemToCollateralAction(collateralId: string, formData: 
     description: formData.get("description") as string || null,
   };
 
+  // ... (Logika mapping item tetap sama)
   if (type.includes("BPKB")) {
-    itemData.noBpkb       = formData.get("noBpkb") as string || null;
-    itemData.namaBpkb     = formData.get("namaBpkb") as string || null;
-    itemData.noPol        = formData.get("noPol") as string || null;
+    itemData.noBpkb = formData.get("noBpkb") as string || null;
+    itemData.namaBpkb = formData.get("namaBpkb") as string || null;
+    itemData.noPol = formData.get("noPol") as string || null;
     itemData.kendaraanJenis = formData.get("kendaraanJenis") as string || null;
-    itemData.kendaraanMerk  = formData.get("kendaraanMerk") as string || null;
+    itemData.kendaraanMerk = formData.get("kendaraanMerk") as string || null;
     itemData.kendaraanTahun = formData.get("kendaraanTahun") as string || null;
   } else if (type.includes("SHM") || type.includes("SHGB")) {
-    itemData.noShm        = formData.get("noShm") as string || null;
+    itemData.noShm = formData.get("noShm") as string || null;
     itemData.namaPemilikShm = formData.get("namaPemilikShm") as string || null;
-    itemData.alamatShm      = formData.get("alamatShm") as string || null;
+    itemData.alamatShm = formData.get("alamatShm") as string || null;
   }
 
   await prisma.collateralItem.create({ data: itemData });
   
-  // Pemanggilan alias yang aman
   revalidateTag("collaterals");
   revalidatePath(`/agunan/${collateralId}`);
   redirect(`/agunan/${collateralId}`);
+}
+
+// --- FUNGSI UNTUK HER ---
+export async function addHerAction(formData: FormData) {
+  // Masukkan logika addHerAction Anda di sini
+  // Contoh:
+  // await prisma.her.create({ ... });
+
+  revalidateTag("collaterals");
+  revalidatePath("/her");
+  revalidatePath("/");
+  redirect("/her");
 }
